@@ -1,0 +1,341 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Home</title>
+    <!--<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://jqueryui.com/resources/demos/style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>-->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.10/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-grid.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        //$(function () {
+        //    $("#accordion").accordion();
+        //});
+
+
+        var app = angular.module('myApp', []);
+        app.controller('MyController', function ($scope, $http) {
+            var seasonData = [];
+            for (var i = 5; i < 19; i++) {
+                if (i < 9)
+                    seasonData.push({ 'text': (2000 + i) + '/0' + (i + 1), 'value': (2000 + i) });
+                else {
+                    seasonData.push({ 'text': (2000 + i) + '/' + (i + 1), 'value': (2000 + i) });
+                }
+            }
+
+            $scope.season = seasonData;
+            //$scope.selectedSeason = '2017';
+            $scope.ShowCompetitionGrid = function (year) {
+                ShowLoader();
+                $http({
+                    url: "http://api.football-data.org/v1/competitions?season=" + $scope.selectedSeason,
+                    dataType: "json",
+                    method: "GET",
+                    headers: {
+                        'X-Auth-Token': 'a7094d04f3a24fa9b9143498ba8822ff'
+                    }
+                }).then(function (response) {
+                    var arrayObj = {};
+                    arrayObj.data = response.data;
+
+                    // console.log(response.data[0]._links.leagueTable.href);
+                    response.data.forEach(function (item, index) {
+                        $http({
+                            url: response.data[index]._links.leagueTable.href,
+                            dataType: "json",
+                            method: "GET",
+                            headers: {
+                                'X-Auth-Token': 'a7094d04f3a24fa9b9143498ba8822ff'
+                            }
+                        }).then(function (responseTable) {
+                            //console.log(responseTable);
+                            //resolve(responseTable.data.standing);
+                            arrayObj.data[index].leagueTable = responseTable.data.standing;
+                        });
+                        $scope.pro = arrayObj.data;//response.data._links.leagueTable
+
+                        HideLoader();
+                    });
+                });
+            }
+
+            // $scope.lastGameR = [];
+            $scope.setSelected = function (lastGameR) {
+                var season = $("#ddl_season").val();
+                $http({
+                    headers: { 'X-Auth-Token': 'a7094d04f3a24fa9b9143498ba8822ff' },
+                    url: lastGameR + "/fixtures?season=" + season,
+                    dataType: 'json', type: 'GET',
+                }).then(function (fixtureResponse) {
+                    //$scope.fixture = response;
+                    var fixtureData = fixtureResponse.data.fixtures.filter(e => e.status == 'FINISHED' && new Date(e.date) <= new Date());
+                    $scope.selectedRowId = lastGameR;
+
+                    $scope.lastGameR = fixtureData[fixtureData.length - 1]; // fixtureResponse.data.fixtures;
+
+                    $scope.lastFiveGamesR = fixtureData.slice(1).slice(-5);
+
+                    $scope.allGamesResult = fixtureData;
+
+                    $http({
+                        headers: { 'X-Auth-Token': 'a7094d04f3a24fa9b9143498ba8822ff' },
+                        url: lastGameR + "/players",
+                        dataType: 'json', type: 'GET',
+                    }).then(function (playersData) {
+                        debugger;
+                        $scope.players = playersData.data.players;
+                    });
+                });
+            };
+
+
+            $scope.ShowHead2head = function (fixtureUrl) {
+                var season = $("#ddl_season").val();
+                $http({
+                    headers: { 'X-Auth-Token': 'a7094d04f3a24fa9b9143498ba8822ff' },
+                    url: fixtureUrl + "?season=" + season,
+                    dataType: 'json', type: 'GET',
+                }).then(function (fixtureResponse) {
+                    //$scope.fixture = response;
+
+                    var fixtureData = fixtureResponse.data.head2head.fixtures; //.filter(e => e.status == 'FINISHED' && new Date(e.date) <= new Date());
+                    $scope.head2head = fixtureData;
+                    $('html,body').animate({
+                        scrollTop: $("#head2head").offset().top
+                    },
+                   'slow');
+                });
+            }
+        });
+
+        function ShowLoader() {
+            $("#overlay").fadeIn(500);
+        }
+
+        function HideLoader() {
+            $("#overlay").fadeOut(500);
+        }
+
+        function ShowHide(e) {
+            var visible = e.nextElementSibling.style.display;
+            if (visible == '')
+                e.nextElementSibling.style.display = 'block';
+            else
+                e.nextElementSibling.style.display = '';
+        }
+
+        function ShowLastPerformance() {
+            $("#ShowLastPerformance").slideToggle(1000);
+        }
+
+        function ShowLastFivePerformance() {
+            $("#ShowLastFivePerformance").slideToggle(500);
+        }
+
+        function ShowSeasonPerformance() {
+            $("#ShowSeasonPerformance").slideToggle(500);
+        }
+
+    </script>
+</head>
+<body ng-app="myApp">
+    <div id="overlay">
+        <div class="progressImage">
+
+        </div>
+    </div>
+    <div class="bgImage">
+
+    </div>
+    <div id="header">
+        <h1>Competition/ League Table</h1>
+    </div>
+
+    <div ng-controller="MyController">
+        <div id="filters" class="select-style">
+            <span>Select a season</span>
+            <select ng-model="selectedSeason" id="ddl_season" ng-change="ShowCompetitionGrid(selectedSeason)">
+                <option ng-repeat="x in season" value="{{x.value}}">{{x.text}}</option>
+            </select>
+        </div>
+        <!--<span>Selected Season: {{selectedSeason}}</span>-->
+        <div id="buttonDiv">
+            <button onclick="ShowLastPerformance()" class="btn btn-primary">Show Last Performance</button>
+            <button onclick="ShowLastFivePerformance()" class="btn btn-primary">Show Last 5 Performance</button>
+            <button onclick="ShowSeasonPerformance()" class="btn btn-primary">Show Season {{selectedSeason}} Performance</button>
+        </div>
+        <div class="leagueTableChart">
+            <div ng-init="accordion=1" class="competition" ng-repeat="data in pro">
+                <h3 class="accordion" onclick="ShowHide(this)" ng-class="{active:accordion==1}">
+                    <a href ng-click="accordion = 1">{{data.caption}}</a>
+                </h3>
+                <div class="accordion-content" ng-show="accordion==1">
+                    <span>
+                        <b>League :</b>
+                        {{data.league}}
+                    </span>
+
+                    <span>
+                        <b>Current Match Day : </b>
+                        {{data.currentMatchDay}}
+                    </span>
+
+                    <span>
+                        <b>Year: </b>
+                        {{data.year}}
+                    </span>
+
+                    <span>
+                        <b>Number Of Teams: </b>
+                        {{data.numberOfTeams}}
+                    </span>
+                    <div class="table-responsive">
+                        <table border="0" class="table" id="leagueTable">
+                            <tr>
+                                <th>P</th>
+                                <th>Team</th>
+                                <th>GP</th>
+                                <th>W</th>
+                                <th>D</th>
+                                <th>L</th>
+                                <th>F</th>
+                                <th>A</th>
+                                <th>GD</th>
+                                <th>Pts</th>
+                            </tr>
+                            <tr ng-repeat="row in data.leagueTable" ng-click="setSelected(row._links.team.href)" ng-class="{selected: row._links.team.href === selectedRowId}">
+                                <td>{{row.position}}</td>
+                                <td><img src={{row.crestUrl}} /> {{row.teamName}}</td>
+                                <td>{{row.playedGames}}</td>
+                                <td>{{row.wins}}</td>
+                                <td>{{row.draws}}</td>
+                                <td>{{row.losses}}</td>
+                                <td>{{row.goals}}</td>
+                                <td>{{row.goalsAgainst}}</td>
+                                <td>{{row.goalDifference}}</td>
+                                <td>{{row.points}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="performanceChart">
+            <div id="ShowLastFivePerformance" class="resultPanel">
+                <h4>Performance of last five games</h4>
+                <div class="resultPanelRow table-responsive" ng-repeat="data in lastFiveGamesR" ng-click="ShowHead2head(data._links.self.href)">
+                    <table border="1" class="table">
+                        <tr>
+                            <th colspan="4">
+                                <b>Date: </b> {{data.date | date:'MM/dd/yyyy'}} {{data.status}}
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>{{data.homeTeamName}} :</td>
+                            <td>{{data.result.goalsHomeTeam}}</td>
+                            <td>{{data.result.goalsAwayTeam}}</td>
+                            <td>: {{data.awayTeamName}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div id="ShowLastPerformance" class="resultPanel">
+                <h4>Performance of last game</h4>
+                <div class="resultPanelRow table-responsive" ng-click="ShowHead2head(lastGameR._links.self.href)">
+                    <table border="1" class="table">
+                        <tr>
+                            <th colspan="4">
+                                <b>Date: </b> {{lastGameR.date | date:'MM/dd/yyyy'}} {{status}}
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>{{lastGameR.homeTeamName}} :</td>
+                            <td>{{lastGameR.result.goalsHomeTeam}}</td>
+                            <td>{{lastGameR.result.goalsAwayTeam}}</td>
+                            <td>: {{lastGameR.awayTeamName}}</td>
+                        </tr>
+                    </table>
+
+                </div>
+            </div>
+
+            <div id="ShowSeasonPerformance" class="resultPanel">
+
+                <h4>Performance in all games played</h4>
+                <div class="resultPanelRow table-responsive" ng-repeat="data in allGamesResult" ng-click="ShowHead2head(data._links.self.href)">
+                    <table border="1" class="table">
+                        <tr>
+                            <th colspan="4">
+                                <b>Date: </b> {{data.date | date:'MM/dd/yyyy'}} {{data.status}}
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>{{data.homeTeamName}} :</td>
+                            <td>{{data.result.goalsHomeTeam}}</td>
+                            <td>{{data.result.goalsAwayTeam}}</td>
+                            <td>: {{data.awayTeamName}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="head2head">
+            <div class="table-responsive">
+                <h4>Head to head results for selected match</h4>
+                <table border="0" class="table" id="head2headTable">
+                    <tr>
+                        <th>Season</th>
+                        <th>Date</th>
+                        <th>Home Team</th>
+                        <th>Score</th>
+                        <th>Away Team</th>
+                    </tr>
+                    <tr ng-repeat="row in head2head">
+                        <td>{{selectedSeason}}</td>
+                        <td>{{row.date | date:'MM/dd/yyyy'}}</td>
+                        <td>{{row.homeTeamName}}</td>
+                        <td>{{row.result.goalsHomeTeam}} - {{row.result.goalsAwayTeam}}</td>
+                        <td>{{row.awayTeamName}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div id="players">
+            <div class="table-responsive">
+                <h4>List of Players of selected team</h4>
+                <table border="0" class="table" id="playersTable">
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Jersey Number</th>
+                        <th>Date of birth</th>
+                        <th>Nationality</th>
+                        <!--<th>Competition</th>-->
+                    </tr>
+                    <tr ng-repeat="row in players">
+                        <td>{{row.name}}</td>
+                        <td>{{row.position}}</td>
+                        <td>{{row.jerseyNumber}}</td>
+                        <td>{{row.dateOfBirth}}</td>
+                        <td>{{row.nationality}}</td>
+                        <!--<td>{{row.losses}}</td>-->
+                    </tr>
+                    </tab
+                </table>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,194 @@
+/*#leagueTable {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}*/
+
+td, th {
+    /*border: 1px solid #ddd;*/
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(odd) {
+    background-color: white;
+}
+
+tr {
+    cursor: pointer;
+}
+
+    tr.selected {
+        background-color: #a6dab4;
+    }
+
+    tr:hover {
+        background-color: #ddd;
+    }
+
+th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #4CAF50;
+    color: white;
+}
+
+#ShowLastPerformance, #ShowLastFivePerformance, #ShowSeasonPerformance {
+    width: 350px;
+    display: none;
+}
+
+    #ShowLastPerformance > h4, #ShowLastFivePerformance > h4, #ShowSeasonPerformance > h4 {
+        background: #cc5b5c;
+        color: #fff;
+        padding: 5px;
+    }
+
+.resultPanel > div {
+    display: inline;
+    text-align: center;
+}
+
+.resultPanelRow {
+    cursor: pointer;
+    text-align: center;
+    display: inline;
+}
+
+.leagueTableChart, .performanceChart {
+    display: inline-block;
+    float: left;
+}
+
+.leagueTableChart {
+    width: 65%;
+}
+
+.performanceChart {
+    position: absolute;
+    max-height: 600px;
+    overflow-y: scroll;
+    padding: 15px;
+    left: 65%;
+}
+
+* {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 13px;
+    line-height: 140%;
+}
+
+h3.accordion {
+    margin: 0;
+}
+
+.accordion a {
+    padding: 10px;
+    background: indianred;
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 1px;
+}
+
+.accordion-content {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 1px 0;
+    display: none;
+}
+
+.competition {
+    display: inline-block;
+    min-width: 800px;
+    margin: 10px;
+}
+
+h1 {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    /* text-decoration: underline; */
+    border-top: solid 1px;
+    border-bottom: solid 1px;
+    padding: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: underline;
+}
+
+#overlay {
+    position: absolute;
+    background: #111;
+    opacity: 0.5;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    transition: all ease-in-out 0.5s;
+    display: none;
+}
+
+    #overlay .progressImage {
+        background: url(images/progress1.gif) center no-repeat;
+        width: 100%;
+        height: 100%;
+        transform: scale(0.4);
+    }
+
+.bgImage {
+    background: url(images/soccerBg.png) center no-repeat;
+    /*background-size:cover;*/
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: -10;
+}
+
+
+#head2head {
+    display: inline-block;
+    width: 48%;
+}
+
+#players {
+    float: right;
+    width: 48%;
+}
+
+#header {
+    background: #4ebd4e;
+    color: #fff;
+}
+
+
+
+.select-style {
+    border: 1px solid #ccc;
+    width: 120px;
+    border-radius: 3px;
+    overflow: hidden;
+    float: right;
+    font-weight: 600;
+    /*background: #fafafa url("img/icon-select.png") no-repeat 90% 50%;*/
+}
+
+    .select-style select {
+        padding: 5px 8px;
+        width: 100%;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        background-image: none;
+        float: right;
+        /*-webkit-appearance: none;*/
+    }
+
+        .select-style select:focus {
+            outline: none;
+        }
